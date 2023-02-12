@@ -5,14 +5,15 @@ module.exports = {
   COIN: '100000000',
   N: 100,
   MAX_TX_INPUTS: 500,
-  BLOCKCHAIN_PROVIDER_DEFAULT: 'sochain',
-  BLOCKCHAIN_PROVIDER_URL_DEFAULT: 'https://sochain.com/api/v2/',
+  BLOCKCHAIN_PROVIDER_DEFAULT: 'nownodes',
+  BLOCKCHAIN_PROVIDER_URL_DEFAULT: 'https://ltcbook.nownodes.io/api/v2',
   // the order of provider names matters in PROVIDERS and PROVIDER_URLS
   // the order needs to be the same
   PROVIDERS: {
     SOCHAIN: 'sochain',
     MEMPOOLSPACE: 'mempoolspace',
-    BLOCKCHAINCOM: 'blockchaincom'
+    BLOCKCHAINCOM: 'blockchaincom',
+    NOWNODES: 'nownodes'
   },
   PROVIDER_URLS: {
     SOCHAIN: {
@@ -26,6 +27,11 @@ module.exports = {
     BLOCKCHAINCOM: {
       URL: 'https://blockchain.info',
       SUPPORT: ['BTC']
+    },
+    NOWNODES :{
+      URL: 'https://ltcbook.nownodes.io/api/v2',
+      API_KEY: 'you api key',
+      SUPPORT: ['LTC']
     }
   },
   NETWORKS: {

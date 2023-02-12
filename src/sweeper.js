@@ -261,7 +261,19 @@ async function addAddrToMap (balanceMap, addrType, i, bip32Priv, pubKey, network
 	let x
 	
 	for (x of addrUtxo) {
-	
+		if(providerService.provider === constants.PROVIDERS.BLOCKCHAINCOM) {
+			x.txid = x.tx_hash_big_endian
+			x.output_no = x.tx_output_n
+			x.value = (x.value/100000000).toString()
+			x.script_hex = x.script
+		}
+
+		if(providerService.provider === constants.PROVIDERS.NOWNODES) {
+			x.output_no = x.vout
+			x.value = (x.value/100000000).toString()
+			x.script_hex = x.script
+			x.script_hex =  await providerService.getTxHex(x.txid, x.output_no)
+		}
 	    const unspentObj = {}
 	    unspentObj.hash = x.txid
 	    unspentObj.index = x.output_no

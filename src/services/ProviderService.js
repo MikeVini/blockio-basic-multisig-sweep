@@ -1,6 +1,9 @@
 const constants = require('../constants')
 const fetch = require('node-fetch')
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+const requestHeaders = new fetch.Headers({
+  "api-key": constants.PROVIDER_URLS.NOWNODES.API_KEY || ''
+});
 
 const ProviderService = function (provider, network) {
   const providerIndex = Object.values(constants.PROVIDERS).indexOf(provider)
@@ -15,7 +18,7 @@ const ProviderService = function (provider, network) {
   this.provider = provider
 }
 
-ProviderService.prototype.getTxHex = async function (txId) {
+ProviderService.prototype.getTxHex = async function (txId, vout) {
   try {
     switch (this.provider) {
       case constants.PROVIDERS.SOCHAIN: {
@@ -45,6 +48,15 @@ ProviderService.prototype.getTxHex = async function (txId) {
           throw new Error(hex)
         }
         return hex
+      }
+      case constants.PROVIDERS.NOWNODES: {
+        const apiUrl = [constants.PROVIDER_URLS.NOWNODES.URL, 'tx', txId].join('/')
+        const res = await fetchUrl(apiUrl)
+        const hex = await res.json()
+        if (res.status !== 200) {
+          throw new Error(hex)
+        }
+        return vout? hex.vout[vout].hex: hex.hex
       }
       default: {
         throw new Error('Could not get hex with provider: ' + this.provider)
@@ -76,6 +88,16 @@ ProviderService.prototype.getUtxo = async function (addr) {
         }
         return json.unspent_outputs
       }
+      case constants.PROVIDERS.NOWNODES: {
+        const apiUrl = [constants.PROVIDER_URLS.NOWNODES.URL, 'utxo', addr + '?confirmed=true'].join('/')
+        const res = await fetchUrl(apiUrl)
+        const json = await res.json()
+
+        if (json.error) {
+          throw new Error(json.message)
+        }
+        return json
+      }
       default: {
         throw new Error('Could not get utxo with provider: ' + this.provider)
       }
@@ -93,6 +115,14 @@ ProviderService.prototype.sendTx = async function (txHex) {
         await broadcastTx(apiUrl, txHex)
         return
       }
+      case constants.PROVIDERS.NOWNODES: {
+        const apiUrl = [constants.PROVIDER_URLS.NOWNODES.URL, 'sendtx',txHex].join('/')
+        const res = await fetchUrl(apiUrl)
+        const json = await res.json()
+        console.log('Send tx:', json)
+        return
+      }
+
       default: {
         throw new Error('Could not send tx with provider: ' + this.provider)
       }
@@ -106,7 +136,7 @@ module.exports = ProviderService
 
 async function fetchUrl (url) {
   try {
-    let response = await fetch(url)
+    let response = await fetch(url, { headers: requestHeaders })
     if (response.ok) {
       return response;
     } else {
